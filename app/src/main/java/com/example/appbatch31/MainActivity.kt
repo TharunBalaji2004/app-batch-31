@@ -1,86 +1,100 @@
 package com.example.appbatch31
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.appbatch31.databinding.ActivityMainBinding
 
-// Activity -> Screen
 
-// Get the user input
-// STEP1: Assign unique id to UI Components
-// STEP2 : Declare UI variables
-// STEP3: Get the ids of components
+// DAY 2 Agenda
+// 1. ViewBinding
+// 2. Toast
+// 3. Login Page (with Splash Screen)
+// 4. Shared Preferences {key, value} login -> true
+
+// View Binding -> Reads XML file -> Stores References -> Binding Class (etPassword)
 
 class MainActivity : AppCompatActivity() {
 
-    // Declaration
-    private lateinit var etEmail: EditText
-    private lateinit var etPassword: EditText
-    private lateinit var btnLogin: Button
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        Log.d("LIFECYCLE", "onCreate() function called")
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
-        // Definition
-        etEmail = findViewById(R.id.et_email)
-        etPassword = findViewById(R.id.et_password)
-        btnLogin = findViewById(R.id.btn_login)
+        // STEP 1: Create instance for sharedPreferences
+        val sharedPreferences = getSharedPreferences("sample", Context.MODE_PRIVATE)
+        // STEP 2: Create editor instance for sharedPreferences
+        val editor = sharedPreferences.edit()
 
-        btnLogin.setOnClickListener {
-            val emailAddress = etEmail.text.toString()
-            val password = etPassword.text.toString()
-            Log.d("INPUT", "Email: ${emailAddress} Password: ${password}")
-
-            // Intent (Java Android) -> This activity, Target Activity
+        // STEP 5: Get the stored value from shared preferences
+        val isLogin = sharedPreferences.getBoolean("login", false)
+        if (isLogin) {
             val intent = Intent(this, HomeActivity::class.java)
-            intent.putExtra("email", emailAddress)
-            intent.putExtra("password", password)
-
-            // Stack -> [MainActivity]
             startActivity(intent)
-            // Stack -> [MainActivity, HomeActivity]
             finish()
-            // Stack -> [E]
+        }
+
+        binding.btnLogin.setOnClickListener {
+            val emailAddress = binding.etEmail.text.toString()
+            val password = binding.etPassword.text.toString()
+
+            if (formValidation(emailAddress, password)) {
+                // STEP 3: Add data
+                editor.putBoolean("login", true)
+                editor.putString("email", emailAddress)
+
+                // STEP 4: Commit the data
+                editor.apply()
+
+                Toast.makeText(this, "Login Successful", Toast.LENGTH_LONG).show()
+                val intent = Intent(this, HomeActivity::class.java)
+                startActivity(intent)
+                finish()
+            } else {
+                Toast.makeText(this, "Login Unsuccessful", Toast.LENGTH_LONG).show()
+            }
+
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    private fun formValidation(email: String, password: String): Boolean {
+        var valid = true
 
-        Log.d("LIFECYCLE", "onStart() function called")
-    }
+        // Check -> 1. Empty or Blank -> 2. Email structure valid
 
-    override fun onResume() {
-        super.onResume()
+        val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\$".toRegex()
 
-        Log.d("LIFECYCLE", "onResume() function called")
-    }
+        if (email.isBlank()) {
+            valid = false
+            binding.tvErrorEmail.text = "Email address cannot be empty"
+        } else if (!email.matches(emailRegex)) {
+            valid = false
+            binding.tvErrorEmail.text = "Invalid Email"
+        } else {
+            binding.tvErrorEmail.text = ""
+        }
 
-    override fun onPause() {
-        super.onPause()
-        Log.d("LIFECYCLE", "onPause() function called")
-    }
+        if (password.isBlank()) {
+            valid = false
+            binding.tvErrorPassword.text = "Password cannot be empty"
+        } else {
+            binding.tvErrorPassword.text = ""
+        }
 
-    override fun onStop() {
-        super.onStop()
-        Log.d("LIFECYCLE", "onStop() function called")
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-        Log.d("LIFECYCLE", "onRestart() function called")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("LIFECYCLE", "onDestroy() function called")
+        return valid
     }
 }
 
 
-// XML Components -> TextView, EditText, Button
+// (1st) Splash Screen -> (2nd) Home Screen
