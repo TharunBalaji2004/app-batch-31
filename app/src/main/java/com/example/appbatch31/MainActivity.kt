@@ -14,6 +14,13 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.appbatch31.databinding.ActivityMainBinding
 
 
+// DAY 3 Agenda
+// 1. State Management
+// 2. State Preserve
+// 3. MVVM Architecture
+// 4. Fragments and Navigation
+
+
 // DAY 2 Agenda
 // 1. ViewBinding
 // 2. Toast
